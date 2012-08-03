@@ -5,7 +5,7 @@ import sys
 
 
 def generate(text):
-    return markdown.markdown(text)
+    return markdown.markdown(text, ['codehilite'])
 
 
 def main():
@@ -14,7 +14,7 @@ def main():
         raise Exception('No input file specified.')
     elif argc > 3:
         raise Exception('To many arguments.')
-    elif argc == 1:
+    elif argc == 2:
         input_file = sys.argv[1]
         output_file = input_file + '.html'
     else:
