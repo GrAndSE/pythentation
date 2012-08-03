@@ -5,7 +5,7 @@ import sys
 
 
 def generate(text):
-    return markdown.markdown(text, ['codehilite'])
+    return markdown.markdown(text, ['codehilite', 'splitsections'])
 
 
 def main():
