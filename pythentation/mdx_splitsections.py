@@ -5,15 +5,14 @@ import re
 import unidecode
 
 
-def slugify(str):
-    '''To slug
+def slugify(text):
+    '''Genrate slug using unidecode and replacing whitespaces with -
     '''
-    str = unidecode.unidecode(str).lower()
-    return re.sub(r'\W+', '-', str)
+    return re.sub(r'\W+', '-', unidecode.unidecode(text).lower())
 
 
 def split_sections(tree, tag, slide_class, head_class=None):
-    '''Add section 
+    '''Add section
     '''
     head_class = head_class or slide_class
     wrapper = None
@@ -21,8 +20,8 @@ def split_sections(tree, tag, slide_class, head_class=None):
     children = list(tree)
     for i, child in enumerate(children):
         # should allow lower level to stop as well
-        m = re.search(r"h(\d+)", child.tag)
-        tag_level = int(m.group(1)) if m else 0
+        match = re.search(r"h(\d+)", child.tag)
+        tag_level = int(match.group(1)) if match else 0
         if tag_level == 1 or tag_level == 2:
             # Create a new wrapper to start new section
             wrapper = markdown.util.etree.Element(tag)
@@ -42,7 +41,7 @@ def split_sections(tree, tag, slide_class, head_class=None):
             tree.remove(child)
             wrapper.append(child)
     # Put a table of content as first element
-    tree.insert(0, toc)
+    #tree.insert(0, toc)
 
 
 class SplitSectionsTreeprocessor(markdown.treeprocessors.Treeprocessor):
@@ -51,8 +50,8 @@ class SplitSectionsTreeprocessor(markdown.treeprocessors.Treeprocessor):
 
     def run(self, doc):
         split_sections(doc, self.config.get("tag")[0],
-                     self.config.get("slide_class")[0],
-                     self.config.get("head_class")[0])
+                       self.config.get("slide_class")[0],
+                       self.config.get("head_class")[0])
 
 
 class SplitSectionsExtension(markdown.Extension):
@@ -60,23 +59,24 @@ class SplitSectionsExtension(markdown.Extension):
     '''
 
     def __init__(self, configs):
+        markdown.Extension.__init__(self)
         self.config = {
             'tag': ['section', 'tag name to use, default: section'],
-            'slide_class': ['section', 'slide class name'],
+            'slide_class': ['slide', 'slide class name'],
             'head_class': [None, 'head slide class name']
         }
         for key, value in configs:
             self.setConfig(key, value)
 
-    def extendMarkdown(self, md, md_globals):
+    def extendMarkdown(self, mkdown, md_globals):
         '''Extend markdown with AddSectionsTreeprocessor
         '''
-        ext = SplitSectionsTreeprocessor(md)
+        ext = SplitSectionsTreeprocessor(mkdown)
         ext.config = self.config
-        md.treeprocessors.add("splitsections", ext, "_end")
+        mkdown.treeprocessors.add("splitsections", ext, "_end")
 
-    
-def makeExtension(configs={}):
+
+def makeExtension(configs=None):
     '''Create extension
     '''
-    return SplitSectionsExtension(configs=configs)
+    return SplitSectionsExtension(configs=configs or {})
